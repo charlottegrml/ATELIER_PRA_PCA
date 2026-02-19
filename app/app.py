@@ -93,7 +93,7 @@ def status():
     init_db()
 
     conn = get_conn()
-    cur = conn.execute("SELECT COUNT(*) FROM messages")
+    cur = conn.execute("SELECT COUNT(*) FROM events")
     count = cur.fetchone()[0]
     conn.close()
 
