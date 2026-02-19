@@ -231,27 +231,29 @@ Faites preuve de pédagogie et soyez clair dans vos explications et procedures d
 **Exercice 1 :**  
 Quels sont les composants dont la perte entraîne une perte de données ?  
   
-*..Répondez à cet exercice ici..*
+Les composants dont la perte entraîne une perte de données sont principalement les volumes persistants. Dans notre cas, le PVC pra-data contient la base de données SQLite utilisée par l’application. Si ce volume est supprimé sans sauvegarde, toutes les données sont perdues. De la même manière, si le PVC pra-backup est supprimé, on perd toutes les sauvegardes, ce qui empêche toute restauration après un incident. En revanche, la suppression d’un pod seul ne provoque pas de perte de données car les données ne sont pas stockées dans le pod lui-même mais dans le volume persistant.
 
 **Exercice 2 :**  
 Expliquez nous pourquoi nous n'avons pas perdu les données lors de la supression du PVC pra-data  
-  
-*..Répondez à cet exercice ici..*
+
+Lors de la suppression du pod, nous n’avons pas perdu les données car celles-ci sont stockées dans le PVC pra-data, qui est indépendant du pod. Le pod ne fait qu’utiliser ce volume. Quand j’ai supprimé le pod, Kubernetes l’a automatiquement recréé grâce au Deployment, et il s’est reconnecté au même volume persistant. La base de données était donc toujours présente. Cela correspond à un PCA : le service continue automatiquement sans perte de données et sans intervention manuelle complexe.
+
 
 **Exercice 3 :**  
 Quels sont les RTO et RPO de cette solution ?  
   
-*..Répondez à cet exercice ici..*
+Dans cette solution, le RPO est d’environ une minute car une sauvegarde est effectuée toutes les minutes grâce au CronJob. Cela signifie qu’en cas de problème, on peut perdre au maximum une minute de données.
+Le RTO correspond au temps nécessaire pour restaurer le service. Dans notre cas, il faut recréer le PVC, relancer l’infrastructure et exécuter le job de restauration. Cela prend quelques minutes. Le redémarrage n’est donc pas instantané mais reste relativement rapide.
 
 **Exercice 4 :**  
 Pourquoi cette solution (cet atelier) ne peux pas être utilisé dans un vrai environnement de production ? Que manque-t-il ?   
   
-*..Répondez à cet exercice ici..*
+Cette solution ne peut pas être utilisée telle quelle en production car elle reste très simplifiée et pédagogique. La base de données SQLite n’est pas adaptée à un environnement avec beaucoup d’utilisateurs ou plusieurs nœuds. Le cluster K3d est local et ne propose pas de vraie haute disponibilité. Il n’y a pas non plus de monitoring, d’alerting, ni de gestion avancée des secrets. Les sauvegardes restent dans le même cluster, ce qui pose un risque si tout le cluster est perdu. Il manque donc une vraie architecture haute disponibilité, une base de données robuste et une stratégie de sauvegarde externalisée.
   
 **Exercice 5 :**  
 Proposez une archtecture plus robuste.   
   
-*..Répondez à cet exercice ici..*
+Pour une architecture plus robuste, je mettrais en place un cluster Kubernetes en production avec plusieurs nœuds pour assurer la haute disponibilité. J’utiliserais une base de données comme PostgreSQL ou MySQL avec réplication. Les sauvegardes seraient stockées en dehors du cluster, par exemple sur un stockage objet. J’ajouterais aussi du monitoring et de l’alerting pour détecter les incidents rapidement. Enfin, je sécuriserais les secrets et j’utiliserais plusieurs réplicas de l’application pour garantir la continuité du service.
 
 ---------------------------------------------------
 Séquence 6 : Ateliers  
