@@ -88,7 +88,7 @@ def count():
 
     return jsonify(count=n)
 
-@app.route("/status", methods=["GET"])
+@app.get("/status")
 def status():
     init_db()
 
