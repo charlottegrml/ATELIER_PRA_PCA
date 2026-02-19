@@ -88,6 +88,40 @@ def count():
 
     return jsonify(count=n)
 
+@app.route("/status", methods=["GET"])
+def status():
+    # 1️⃣ Nombre d’événements en base
+    conn = sqlite3.connect("data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM messages")
+    count = cursor.fetchone()[0]
+    conn.close()
+
+    # 2️⃣ Recherche du dernier backup
+    backup_path = "/backup"
+    last_backup_file = None
+    backup_age_seconds = None
+
+    if os.path.exists(backup_path):
+        files = [f for f in os.listdir(backup_path) if os.path.isfile(os.path.join(backup_path, f))]
+        
+        if files:
+            latest_file = max(
+                files,
+                key=lambda f: os.path.getmtime(os.path.join(backup_path, f))
+            )
+            
+            last_backup_file = latest_file
+            last_backup_time = os.path.getmtime(os.path.join(backup_path, latest_file))
+            backup_age_seconds = int(time.time() - last_backup_time)
+
+    return jsonify({
+        "count": count,
+        "last_backup_file": last_backup_file,
+        "backup_age_seconds": backup_age_seconds
+    })
+
+
 # ---------- Main ----------
 if __name__ == "__main__":
     init_db()
