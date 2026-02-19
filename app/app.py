@@ -90,14 +90,13 @@ def count():
 
 @app.route("/status", methods=["GET"])
 def status():
-    # 1️⃣ Nombre d’événements en base
-    conn = sqlite3.connect("data.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM messages")
-    count = cursor.fetchone()[0]
+    init_db()
+
+    conn = get_conn()
+    cur = conn.execute("SELECT COUNT(*) FROM messages")
+    count = cur.fetchone()[0]
     conn.close()
 
-    # 2️⃣ Recherche du dernier backup
     backup_path = "/backup"
     last_backup_file = None
     backup_age_seconds = None
